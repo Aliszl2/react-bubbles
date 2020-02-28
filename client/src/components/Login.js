@@ -1,15 +1,10 @@
 import React, { useRef }  from "react";
 import axios from "axios";
-// import {axiosWithAuth} from '../auth/axiosWithAuth';
-// import {useHistory} from "react-router-dom"
 
 const Login = (props) => {
-  console.log(props);
-  // const history =useHistory();
   const usernameRef = useRef();
   const passwordRef = useRef();
-  // make a post request to retrieve a token from the api
-  // when you have handled the token, navigate to the BubblePage route
+
   const submit = () => {
     
     axios
