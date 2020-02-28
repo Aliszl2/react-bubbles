@@ -1,4 +1,6 @@
 import React from "react";
+import axios from "axios";
+import {axiosWithAuth} from '../auth/axiosWithAuth';
 
 const Login = () => {
   // make a post request to retrieve a token from the api
