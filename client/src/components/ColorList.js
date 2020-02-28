@@ -1,42 +1,95 @@
 import React, { useState } from "react";
-import axios from "axios";
+// import axios from "axios";
+import { axiosWithAuth } from "../auth/axiosWithAuth";
+import uuid from "uuid"
 
 const initialColor = {
   color: "",
   code: { hex: "" }
 };
 
-const ColorList = ({ colors, updateColors }) => {
+const ColorList = ({ colors, updateColors, fetchColors }) => {
   console.log(colors);
   const [editing, setEditing] = useState(false);
   const [colorToEdit, setColorToEdit] = useState(initialColor);
+  const [newColor, setNewColor] = useState({
+    color:"",
+    code:{hex:""},
+    id:uuid() 
+  });
 
   const editColor = color => {
     setEditing(true);
     setColorToEdit(color);
   };
 
+
   const saveEdit = e => {
     e.preventDefault();
+    console.log(colorToEdit);
     // Make a put request to save your updated color
     // think about where will you get the id from...
     // where is is saved right now?
+    axiosWithAuth()
+    .put(`http://localhost:5000/api/colors/${colorToEdit.id}`, colorToEdit)
+    .then(res => {
+      setEditing(false);
+      setColorToEdit(initialColor);
+      fetchColors();
+    })
+    .catch(error => {
+      debugger;
+      console.error(error);
+    });
   };
 
-  const deleteColor = color => {
+ 
+  const handleSubmitNewColor = e => {
+    e.preventDefault();
+    console.log(e.target.name);
+ 
+    axiosWithAuth()
+    .post(`http://localhost:5000/api/colors`, newColor)
+    .then(res => {
+            updateColors(
+{
+  color: "", code: {hex:""}
+}
+
+      );
+      fetchColors();
+    })
+    .catch(error => {
+      debugger;
+      console.error(error);
+    });
+  };
+
+
+  const deleteColor = id => {
     // make a delete request to delete this color
+    axiosWithAuth()
+    .delete(`http://localhost:5000/api/colors/${id}, colors`)
+    .then(response => {
+      updateColors(colors.filter(color => color.id !== id));
+    })
+
+    .catch(err => console.log(err));
   };
 
   return (
     <div className="colors-wrap">
       <p>colors</p>
+      <button
+    
+      >Add color</button>
       <ul>
         {colors.map(color => (
           <li key={color.color} onClick={() => editColor(color)}>
             <span>
               <span className="delete" onClick={e => {
                     e.stopPropagation();
-                    deleteColor(color)
+                    deleteColor(color.id)
                   }
                 }>
                   x
@@ -50,6 +103,42 @@ const ColorList = ({ colors, updateColors }) => {
           </li>
         ))}
       </ul>
+      <form>
+          <legend>Add color</legend>
+          <label>
+            color name:
+            <input
+            value={newColor.value}
+             onChange={e =>{
+
+               console.log(e.target.value)
+               setNewColor({ ...newColor, color: e.target.value })
+             }
+            }
+            />
+          </label>
+          <label>
+            hex code:
+            <input 
+            value={newColor.code.hex}
+            onChange={e =>{
+
+              console.log(e.target.value)
+              setNewColor({
+                ...colorToEdit,
+                code: { hex: e.target.value }
+              })
+            }
+            }
+            />
+          </label>
+          <div className="button-row">
+            <button 
+            handleSubmitNewColor={e=>handleSubmitNewColor(newColor)}
+            type="submit">save</button>
+           
+          </div>
+        </form>
       {editing && (
         <form onSubmit={saveEdit}>
           <legend>edit color</legend>
@@ -75,13 +164,14 @@ const ColorList = ({ colors, updateColors }) => {
             />
           </label>
           <div className="button-row">
-            <button type="submit">save</button>
+            <button onClick={saveEdit} type="submit">save</button>
             <button onClick={() => setEditing(false)}>cancel</button>
           </div>
         </form>
       )}
-      <div className="spacer" />
-      {/* stretch - build another form here to add a color */}
+  
+ 
+      
     </div>
   );
 };
